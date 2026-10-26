@@ -12,10 +12,16 @@ import (
 
 type Kota interface {
 	Create(c *gin.Context)
+	FindByID(c *gin.Context)
 }
 
 type KotaController struct {
 	kotaService services.Kota
+}
+
+type Response struct {
+	Message string `json:"message"`
+	Error   string `json:"error,omitempty"`
 }
 
 func NewKotaController(kota services.Kota) *KotaController {
@@ -26,8 +32,7 @@ func NewKotaController(kota services.Kota) *KotaController {
 
 type CreateKotaResponse struct {
 	ID      uint   `json:"id,omitempty"`
-	Message string `json:"message"`
-	Error   string `json:"error,omitempty"`
+	Response
 }
 
 func (kc *KotaController) Create(c *gin.Context) {
@@ -56,5 +61,42 @@ func (kc *KotaController) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, CreateKotaResponse{
 		ID: id,
 		Message: "Berhasil", 
+	})
+}
+
+
+type FindKotaByIDResponse struct {
+	Kota models.Kota `json:"kota"`
+	Response
+}
+func (kc *KotaController) FindByID(c *gin.Context) {
+	var uri struct{
+		ID uint `uri:"id" binding:"required,gt=0"`
+	}
+
+	if err := c.ShouldBindUri(&uri);err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, FindKotaByIDResponse{
+			Message: "validation error",
+			Error: err.Error(),
+		})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+	defer cancel()
+
+	kota, err := kc.kotaService.FindByID(ctx, uri.ID)
+
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, FindKotaByIDResponse{
+			Message: "failed to find kota",
+			Error: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, FindKotaByIDResponse{
+		Kota: *kota,
+		Message: "Berhasil",
 	})
 }

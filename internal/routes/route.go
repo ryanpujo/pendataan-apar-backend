@@ -30,4 +30,5 @@ func credentialRoute(r *gin.Engine, credController controllers.Credential) {
 func kotaRoute(r *gin.Engine, kotaController controllers.Kota) {
 	v1Route := r.Group("/v1/kota")
 	v1Route.POST("/create", kotaController.Create)
+	v1Route.GET("/:id", kotaController.FindByID)
 }

@@ -9,6 +9,7 @@ import (
 
 type Kota interface {
 	Create(ctx context.Context, payload *models.CreateKotaRequest) (uint, error)
+	FindByID(ctx context.Context, id uint) (*models.Kota, error)
 }
 
 type KotaService struct {
@@ -23,4 +24,8 @@ func NewKotaService(repo repositories.Kota) *KotaService {
 
 func (ks *KotaService) Create(ctx context.Context, payload *models.CreateKotaRequest) (uint, error) {
 	return ks.kotaRepo.Create(ctx, payload)
+}
+
+func (ks *KotaService) FindByID(ctx context.Context, id uint) (*models.Kota, error) {
+	return ks.kotaRepo.FindByID(ctx, id)
 }
